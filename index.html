@@ -647,10 +647,34 @@ const observer=new MutationObserver(()=>{
 observer.observe(document.body,{attributes:true,subtree:true,attributeFilter:['class']});
 
 function goCheckout() {
-  fbq('track', 'InitiateCheckout');
-  alert("evento disparado");
-  window.location.href = "https://pay.kiwify.com.br/...";
+  if (typeof fbq === 'function') {
+    fbq('track', 'InitiateCheckout');
+  }
+  setTimeout(function() {
+    window.open('https://pay.kiwify.com.br/2gt5FAV', '_blank');
+  }, 300);
 }
 </script>
-</body>
+<script>
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('[onclick*="goCheckout"], #btn-checkout, .btn-checkout');
+    if (!btn) {
+      if (e.target.innerText && e.target.innerText.trim().toLowerCase().includes('quero meu protocolo')) {
+        btn = e.target;
+      }
+    }
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (typeof fbq === 'function') {
+      fbq('track', 'InitiateCheckout');
+    }
+
+    setTimeout(function() {
+      window.open('https://pay.kiwify.com.br/2gt5FAV', '_blank');
+    }, 300);
+  });
+</script></body>
 </html>
