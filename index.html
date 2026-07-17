@@ -648,6 +648,7 @@ observer.observe(document.body,{attributes:true,subtree:true,attributeFilter:['c
 
 function goCheckout() {
   fbq('track', 'InitiateCheckout');
+  alert("evento disparado");
   window.location.href = "https://pay.kiwify.com.br/...";
 }
 </script>
