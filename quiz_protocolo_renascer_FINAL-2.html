@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Protocolo Renascer — Descubra Seu Perfil</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  --plum: #1A0830;
+  --plum2: #2D1550;
+  --gold: #C9A84C;
+  --gold2: #E8C97A;
+  --lav: #9B7FD4;
+  --lav2: #C4B0F0;
+  --cream: #F5F0EB;
+  --text: #F0EBF8;
+  --muted: rgba(240,235,248,0.55);
+  --green: #4CAF7D;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  min-height: 100vh;
+  background: var(--plum);
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* STARS */
+.stars { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+.star { position:absolute; background:var(--gold); border-radius:50%; animation:twinkle var(--d) ease-in-out infinite; opacity:0; }
+@keyframes twinkle { 0%,100%{opacity:0;transform:scale(.5)} 50%{opacity:var(--o);transform:scale(1)} }
+
+/* WRAPPER */
+.wrapper { position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+
+/* PROGRESS */
+.prog-wrap { width:100%; max-width:520px; padding:20px 24px 0; display:none; }
+.prog-top { display:flex; justify-content:space-between; margin-bottom:8px; }
+.prog-label { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:600; }
+.prog-count { font-size:12px; color:var(--muted); }
+.prog-track { height:3px; background:rgba(255,255,255,.1); border-radius:10px; overflow:hidden; }
+.prog-fill { height:100%; background:linear-gradient(90deg,var(--lav),var(--gold)); border-radius:10px; transition:width .5s ease; width:0%; }
+
+/* CARD */
+.card { width:100%; max-width:520px; padding:24px; display:none; flex-direction:column; min-height:calc(100vh - 80px); }
+.card.active { display:flex; animation:slideIn .4s ease; }
+@keyframes slideIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+/* INTRO */
+.eyebrow { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); font-weight:600; text-align:center; margin-bottom:20px; }
+.intro-title { font-family:'Cormorant Garamond',serif; font-size:clamp(32px,8vw,46px); font-weight:700; text-align:center; line-height:1.15; margin-bottom:16px; background:linear-gradient(135deg,var(--cream),var(--gold2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.intro-sub { font-size:15px; color:var(--muted); text-align:center; line-height:1.7; margin-bottom:28px; }
+.social-box { background:rgba(155,127,212,.12); border:1px solid rgba(155,127,212,.25); border-radius:14px; padding:16px 20px; text-align:center; margin-bottom:28px; }
+.social-num { font-family:'Cormorant Garamond',serif; font-size:34px; font-weight:700; color:var(--gold2); display:block; }
+.social-desc { font-size:13px; color:var(--muted); }
+.center-grow { flex:1; display:flex; flex-direction:column; justify-content:center; }
+
+/* VAL */
+.val-icon { font-size:52px; text-align:center; margin-bottom:20px; }
+.val-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:700; text-align:center; color:var(--gold2); margin-bottom:16px; line-height:1.2; }
+.val-text { font-size:15px; color:var(--muted); text-align:center; line-height:1.7; margin-bottom:28px; }
+.val-text strong { color:var(--lav2); }
+
+/* QUESTION */
+.q-num { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:600; margin-bottom:12px; }
+.q-text { font-family:'Cormorant Garamond',serif; font-size:clamp(21px,5vw,27px); font-weight:600; line-height:1.3; margin-bottom:24px; color:var(--cream); }
+.options { display:flex; flex-direction:column; gap:11px; }
+.option { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:14px; padding:15px 16px; cursor:pointer; transition:all .22s ease; font-size:14px; color:var(--text); line-height:1.5; text-align:left; display:flex; align-items:flex-start; gap:10px; }
+.option:hover { border-color:rgba(155,127,212,.4); transform:translateX(4px); background:rgba(155,127,212,.08); }
+.option.selected { border-color:var(--lav); background:rgba(155,127,212,.15); }
+.opt-letter { min-width:26px; height:26px; border-radius:50%; background:rgba(201,168,76,.15); border:1px solid rgba(201,168,76,.3); color:var(--gold); font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; transition:all .2s; }
+.option.selected .opt-letter { background:var(--lav); border-color:var(--lav); color:#fff; }
+.card-foot { padding-top:20px; padding-bottom:12px; }
+
+/* LOADING */
+.load-wrap { flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; }
+.load-track { width:80%; background:rgba(255,255,255,.1); height:4px; border-radius:10px; overflow:hidden; margin-top:24px; }
+.load-bar { height:100%; background:linear-gradient(90deg,var(--lav),var(--gold)); border-radius:10px; width:0%; }
+
+/* RESULT */
+.result-glow { width:80px; height:80px; border-radius:50%; background:radial-gradient(circle,rgba(201,168,76,.35),transparent); margin:0 auto 20px; display:flex; align-items:center; justify-content:center; font-size:36px; }
+.result-name { font-family:'Cormorant Garamond',serif; font-size:clamp(24px,6vw,34px); font-weight:700; text-align:center; line-height:1.2; margin-bottom:16px; background:linear-gradient(135deg,var(--gold2),var(--lav2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.result-desc { font-size:14px; color:var(--muted); text-align:center; line-height:1.7; margin-bottom:20px; }
+.traits-box { background:rgba(155,127,212,.1); border:1px solid rgba(155,127,212,.2); border-radius:14px; padding:16px 18px; margin-bottom:20px; }
+.traits-title { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--lav2); font-weight:600; margin-bottom:12px; }
+.trait { display:flex; align-items:flex-start; gap:10px; font-size:13px; color:var(--muted); padding:6px 0; border-bottom:1px solid rgba(255,255,255,.06); line-height:1.5; }
+.trait:last-child { border-bottom:none; }
+.trait-dot { color:var(--gold); flex-shrink:0; }
+
+/* SCRATCH CARD */
+.scratch-wrap { flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; }
+.scratch-eyebrow { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); font-weight:600; margin-bottom:12px; }
+.scratch-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:700; color:var(--gold2); margin-bottom:8px; line-height:1.2; }
+.scratch-sub { font-size:14px; color:var(--muted); margin-bottom:28px; }
+.scratch-container { position:relative; width:280px; height:160px; border-radius:20px; overflow:hidden; margin:0 auto 24px; box-shadow:0 8px 32px rgba(0,0,0,.4); }
+.scratch-prize { position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg,#2D1550,#1A0830); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:1; }
+.prize-pct { font-family:'Cormorant Garamond',serif; font-size:64px; font-weight:700; color:var(--gold2); line-height:1; }
+.prize-label { font-size:14px; color:var(--lav2); margin-top:4px; font-weight:500; }
+.prize-val { font-size:13px; color:var(--muted); margin-top:2px; }
+canvas#scratchCanvas { position:absolute; top:0; left:0; width:100%; height:100%; z-index:2; cursor:pointer; border-radius:20px; }
+.scratch-hint { font-size:13px; color:var(--muted); margin-bottom:16px; }
+.scratch-hint span { font-size:20px; display:block; margin-bottom:4px; animation:bounce .8s ease-in-out infinite; }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+.scratch-revealed { display:none; font-size:13px; color:var(--green); font-weight:600; margin-bottom:20px; }
+
+/* OFFER */
+.offer-box { background:linear-gradient(135deg,rgba(201,168,76,.1),rgba(155,127,212,.08)); border:1px solid rgba(201,168,76,.25); border-radius:16px; padding:18px; margin-bottom:16px; }
+.offer-title { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:700; color:var(--gold2); margin-bottom:14px; text-align:center; }
+.bonus-row { display:flex; align-items:flex-start; gap:12px; padding:9px 0; border-bottom:1px solid rgba(255,255,255,.06); }
+.bonus-row:last-child { border-bottom:none; }
+.bonus-ico { font-size:20px; flex-shrink:0; }
+.bonus-name { font-size:13px; font-weight:600; color:var(--text); }
+.bonus-val { font-size:11px; color:var(--gold); margin-top:2px; }
+.price-center { text-align:center; margin:18px 0; }
+.price-old { font-size:15px; color:var(--muted); text-decoration:line-through; margin-bottom:4px; }
+.price-new { font-family:'Cormorant Garamond',serif; font-size:54px; font-weight:700; color:var(--gold2); line-height:1; }
+.price-label { font-size:13px; color:var(--muted); margin-top:4px; }
+.urgency { background:rgba(212,119,138,.12); border:1px solid rgba(212,119,138,.25); border-radius:10px; padding:10px 14px; font-size:12px; color:#E8A0B0; text-align:center; margin-bottom:16px; }
+.guarantee { display:flex; align-items:center; gap:10px; background:rgba(76,175,125,.08); border:1px solid rgba(76,175,125,.2); border-radius:10px; padding:12px 14px; margin-bottom:20px; font-size:12px; color:#90D4B4; line-height:1.5; }
+.safe { text-align:center; font-size:11px; color:var(--muted); margin-top:8px; padding-bottom:32px; }
+
+/* BUTTONS */
+.btn-gold { width:100%; padding:18px 24px; background:linear-gradient(135deg,var(--gold),var(--gold2)); border:none; border-radius:14px; font-family:'Inter',sans-serif; font-size:16px; font-weight:600; color:var(--plum); cursor:pointer; transition:all .25s; letter-spacing:.3px; margin-bottom:8px; }
+.btn-gold:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,.35); }
+.btn-purple { width:100%; padding:20px 24px; background:linear-gradient(135deg,#6B35C0,#9B7FD4); border:none; border-radius:14px; font-family:'Inter',sans-serif; font-size:17px; font-weight:600; color:#fff; cursor:pointer; transition:all .25s; margin-bottom:10px; box-shadow:0 4px 20px rgba(107,53,192,.4); }
+.btn-purple:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(107,53,192,.5); }
+.btn-ghost { width:100%; padding:15px 24px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:14px; font-family:'Inter',sans-serif; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; transition:all .25s; }
+.btn-ghost:hover { background:rgba(255,255,255,.1); color:var(--text); }
+.pulse { animation:pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.02)} }
+.divider { height:1px; background:rgba(255,255,255,.08); margin:20px 0; }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="wrapper">
+  <div class="prog-wrap" id="progWrap">
+    <div class="prog-top">
+      <span class="prog-label">Protocolo Renascer</span>
+      <span class="prog-count" id="progCount">1 / 15</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+  </div>
+
+  <!-- INTRO -->
+  <div class="card active" id="card-0">
+    <div class="center-grow">
+      <p class="eyebrow">✦ Teste Gratuito</p>
+      <h1 class="intro-title">Você ainda sabe quem você é?</h1>
+      <p class="intro-sub">Descubra em 2 minutos como se reencontrar como mulher — e voltar a reconhecer o seu eu interior.</p>
+      <div class="social-box">
+        <span class="social-num">+47.000</span>
+        <span class="social-desc">mulheres já descobriram seu perfil</span>
+      </div>
+      <button class="btn-gold pulse" onclick="startQuiz()">✨ Começar o Teste Gratuito</button>
+      <p style="text-align:center;font-size:11px;color:var(--muted);margin-top:8px;">🔒 Resultado em 2 minutos · 100% gratuito</p>
+    </div>
+  </div>
+
+  <!-- Q1 -->
+  <div class="card" id="card-q1">
+    <p class="q-num">Pergunta 1 de 15</p>
+    <p class="q-text">Como você se sentiria se a pessoa mais importante para você sumisse por um dia sem avisar?</p>
+    <div class="options">
+      <div class="option" onclick="pick(this,'A','q1')"><span class="opt-letter">A</span>Entraria em desespero — fico extremamente ansiosa nessas situações</div>
+      <div class="option" onclick="pick(this,'B','q1')"><span class="opt-letter">B</span>Ficaria preocupada mas conseguiria esperar com calma</div>
+      <div class="option" onclick="pick(this,'C','q1')"><span class="opt-letter">C</span>Me sentiria abandonada e começaria a questionar tudo</div>
+      <div class="option" onclick="pick(this,'D','q1')"><span class="opt-letter">D</span>Ficaria bem — tenho minha própria vida e me sinto segura</div>
+    </div>
+    <div class="card-foot"><button class="btn-ghost" id="nxt-q1" onclick="go('q1','q2')" style="display:none">Próxima →</button></div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="card" id="card-q2">
+    <p class="q-num">Pergunta 2 de 15</p>
+    <p class="q-text">Você já deixou de fazer algo que queria muito por medo de decepcionar alguém?</p>
+    <div class="options">
+      <div class="option" onclick="pick(this,'A','q2')"><span class="opt-letter">A</span>Sim, faço isso com frequência — prefiro evitar conflito</div>
+      <div class="option" onclick="pick(this,'B','q2')"><span class="opt-letter">B</span>Às vezes, quando a situação é delicada</div>
+      <div class="option" onclick="pick(this,'C','q2')"><span class="opt-letter">C</span>Raramente — me esforço para manter minha identidade</div>
+      <div class="option" onclick="pick(this,'D','q2')"><span class="opt-letter">D</span>Não, costumo priorizar o que me faz bem</div>
+    </div>
+    <div class="card-foot"><button class="btn-ghost" id="nxt-q2" onclick="go('q2','q3')" style="display:none">Próxima →</button></div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="card" id="card-q3">
+    <p class="q-num">Pergunta 3 de 15</p>
+    <p class="q-text">Quando você olha no espelho hoje, o que você sente?</p>
+    <div class="options">
+      <div class="option" onclick="pick(this,'A','q3')"><span class="opt-letter">A</span>Não me reconheço mais — perdi algo importante de mim</div>
+      <div class="option" onclick="pick(this,'B','q3')"><span class="opt-letter">B</span>Me vejo, mas não me gosto tanto quanto antes</div>
+      <div class="option" onclick="pick(this,'C','q3')"><span class="opt-letter">C</span>Vejo alguém que carrega demais e está exausta</div>
+      <div class="option" onclick="pick(this,'D','q3')"><span class="opt-letter">D</span>Me vejo com amor, mesmo com as imperfeições</div>
+    </div>
+    <div class="card-foot"><button class="btn-ghost" id="nxt-q3" onclick="go('q3','q4')" style="display:none">Próxima →</button></div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="card" id="card-q4">
+    <p class="q-num">Pergunta 4 de 15</p>
+    <p class="q-text">Qual dessas situações mais descreve você agora?</p>
+    <div class="options">
+      <div class="option" onclick="pick(this,'A','q4')"><span class="opt-letter">A</span>Coloco as necessidades dos outros sempre acima das minhas</div>
+      <div class="option" onclick="pick(this,'B','q4')"><span class="opt-letter">B</span>Perdi minha identidade dentro de um relacionamento</div>
+      <div class="option" onclick="pick(this,'C','q4')"><span class="opt-letter">C</span>Cuido de todo mundo mas ninguém cuida de mim</div>
+      <div class="option" onclick="pick(this,'D','q4')"><span class="opt-letter">D</span>Sinto que me afastei do meu propósito e da minha fé</div>
+    </div>
+    <div class="card-foot"><button class="btn-ghost" id="nxt-q4" onclick="go('q4','q5')" style="display:none">Próxima →</button></div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="card" id="card-q5">
+    <p class="q-num">Pergunta 5 de 15</p>
+    <p class="q-text">Faz quanto tempo você está se sentindo assim?</p>
+    <div class="options">
+      <div class="option" onclick="pick(this,'A','q5')"><span class="opt-letter">A</span>Menos de 6 meses</div>
+      <div class="option" onclick="pick(this,'B','q5')"><span class="opt-letter">B</span>Entre 6 meses e 1 ano</div>
+      <div class="option" onclick="pick(this,'C','q5')"><span class="opt-letter">C</span>Entre 1 e 3 anos</div>
+      <div class="option" onclick="pick(this,'D','q5')"><span class="opt-letter">D</span>Há mais de 3 anos — já não lembro como era diferente</div>
+    </div>
+    <div class="card-foot"><button class="btn-ghost" id="nxt-q5" onclick="go('q5','val1')" style="display:none">Próxima →</button></div>
+  </div>
+
+  <!-- VAL 1 -->
+  <div class="card" id="card-val1">
+    <div class="center-grow">
+      <div class="val-icon">💜</div>
+      <h2 class="val-title">Você não está sozinha.</h2>
+      <p class="val-text">Mais de <strong>2 milhões de mulheres brasileiras</strong> passam exatamente pelo que você descreveu. O primeiro passo é reconhecer. E você já deu esse passo.</p>
+      <button class="btn-gold" onclick="go('val1','q6')">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="card" id="card-q6">
+    <p class="q-num">Pergunta 6 de 15</p>
+    <p class="q-text">Você ainda lembra de quem você era antes de tudo isso começar?</p>
+    <div class="options">
+      <div class="option" onclick="pick(this,'A','q6')"><span class="opt-letter">A</span>Lembro bem e tenho muita saudade dessa versão de mim</div>
+      <div class="option" onclick="pick(this,'B','q6')"><span class="opt-letter">B</span>Tenho algumas memórias mas está tudo muito difuso</div>
+      <div class="option" onclick="pick(this,'C','q6')"><span class="opt-letter">C</span>Não me lembro mais — essa pessoa sumiu há muito tempo</div>
+      <div class="option" onclick="pick(this,'D','q6')"><span class="opt-letter">D</span>Acho que nunca me conheci de verdade</div>
+    </div>
+    <div class="card-foot"><button class="btn-ghost" id="nxt-q6" onclick="go('q6','q7')" style="display:none">Próxima →</button></div>
+  </div>
+
+  <!-- Q7 -->
+  <div class="card" id="card-q7">
+    <p class="q-num">Pergunta 7 de 15</p>
+    <p class="q-text">Como você reage quando alguém te critica ou te ignora?</p>
+    <div class="options">
+      <div class="option" onclick="pick(this,'A','q7')"><span class="opt-letter">A</span>Fico arrasada e começo a questionar meu valor</div>
+      <div class="option" onclick="pick(this,'B','q7')"><span class="opt-letter">B</span>Me machuca muito mas tento esconder de todos</div>
+      <div class="option" onclick="pick(this,'C','q7')"><span class="opt-letter">C</span>Fico ruminando por dias — não consigo soltar</div>
+      <div class="option" onclick="pick(this,'D','q7')"><span class="opt-letter">D</span>Me afeta mas consigo me reequilibrar logo</div>
+    </div>
+    <div class="card-foot"><button class="btn-ghost" id="nxt-q7" onclick="go('q7','q8')" style="display:none">Próxima →</button></div>
+  </div>
+
+  <!-- Q8 -->
+  <div class="card" id="card-q8">
+    <p class="q-num">Pergunta 8 de 15</p>
+    <p class="q-text">Qual é a sua situação atual?</p>
+    <div class="options">
+      <div class="option" onclick="pick(this,'A','q8')"><span class="opt-letter">A</span>Estou em um relacionamento mas não me sinto bem</div>
+      <div class="option" onclick="pick(this,'B','q8')"><span class="opt-letter">B</span>Terminei recentemente e estou tentando me encontrar</div>
+      <div class="option" onclick="pick(this,'C','q8')"><span class="opt-letter">C</span>Estou sozinha e querendo me reconectar comigo mesma</div>
+      <div class="option" onclick="pick(this,'D','q8')"><span class="opt-letter">D</span>Casada mas me sinto emocionalmente sozinha</div>
+    </div>
+    <div class="card-foot"><button class="btn-ghost" id="nxt-q8" onclick="go('q8','q9')" style="display:none">Próxima →</button></div>
+  </div>
+
+  <!-- Q9 -->
+  <div class="card" id="card-q9">
+    <p class="q-num">Pergunta 9 de 15</p>
+    <p class="q-text">O que você mais deseja recuperar na sua vida?</p>
+    <div class="options">
+      <div class="option" onclick="pick(this,'A','q9')"><span class="opt-letter">A</span>Minha autoestima e confiança em mim mesma</div>
+      <div class="option" onclick="pick(this,'B','q9')"><span class="opt-letter">B</span>Minha identidade — saber quem eu sou de verdade</div>
+      <div class="option" onclick="pick(this,'C','q9')"><span class="opt-letter">C</span>Minha paz e equilíbrio emocional</div>
+      <div class="option" onclick="pick(this,'D','q9')"><span class="opt-letter">D</span>Minha conexão com Deus e meu propósito de vida</div>
+    </div>
+    <div class="card-foot"><button class="btn-ghost" id="nxt-q9" onclick="go('q9','q10')" style="display:none">Próxima →</button></div>
+  </div>
+
+  <!-- Q10 -->
+  <div class="card" id="card-q10">
+    <p class="q-num">Pergunta 10 de 15</p>
+    <p class="q-text">Quando você está no seu pior momento, o que você faz?</p>
+    <div class="options">
+      <div class="option" onclick="pick(this,'A','q10')"><span class="opt-letter">A</span>Me fecho e fico sozinha com tudo dentro</div>
+      <div class="option" onclick="pick(this,'B','q10')"><span class="opt-letter">B</span>Busco distrações — celular, séries, comida</div>
+      <div class="option" onclick="pick(this,'C','q10')"><span class="opt-letter">C</span>Choro muito mas não consigo processar de verdade</div>
+      <div class="option" onclick="pick(this,'D','q10')"><span class="opt-letter">D</span>Oro e busco forças na fé</div>
+    </div>
+    <div class="card-foot"><button class="btn-ghost" id="nxt-q10" onclick="go('q10','val2')" style="display:none">Próxima →</button></div>
+  </div>
+
+  <!-- VAL 2 -->
+  <div class="card" id="card-val2">
+    <div class="center-grow">
+      <div class="val-icon">🌱</div>
+      <h2 class="val-title">Isso tem nome. E tem solução.</h2>
+      <p class="val-text">O que você está descrevendo tem raízes conhecidas. <strong>Padrões aprendidos podem ser desaprendidos.</strong> Não é fraqueza — é o que acontece quando você fica tempo demais colocando os outros em primeiro lugar.</p>
+      <button class="btn-gold" onclick="go('val2','q11')">Quero saber mais →</button>
+    </div>
+  </div>
+
+  <!-- Q11 -->
+  <div class="card" id="card-q11">
+    <p class="q-num">Pergunta 11 de 15</p>
+    <p class="q-text">Quanto tempo por dia você conseguiria dedicar a si mesma?</p>
+    <div class="options">
+      <div class="option" onclick="pick(this,'A','q11')"><span class="opt-letter">A</span>5 a 10 minutos — minha rotina é muito puxada</div>
+      <div class="option" onclick="pick(this,'B','q11')"><span class="opt-letter">B</span>15 a 20 minutos</div>
+      <div class="option" onclick="pick(this,'C','q11')"><span class="opt-letter">C</span>30 minutos ou mais</div>
+      <div class="option" onclick="pick(this,'D','q11')"><span class="opt-letter">D</span>Depende do dia — minha rotina é imprevisível</div>
+    </div>
+    <div class="card-foot"><button class="btn-ghost" id="nxt-q11" onclick="go('q11','q12')" style="display:none">Próxima →</button></div>
+  </div>
+
+  <!-- Q12 -->
+  <div class="card" id="card-q12">
+    <p class="q-num">Pergunta 12 de 15</p>
+    <p class="q-text">O que te impediu de mudar antes?</p>
+    <div class="options">
+      <div class="option" onclick="pick(this,'A','q12')"><span class="opt-letter">A</span>Não sabia por onde começar</div>
+      <div class="option" onclick="pick(this,'B','q12')"><span class="opt-letter">B</span>Falta de tempo no dia a dia</div>
+      <div class="option" onclick="pick(this,'C','q12')"><span class="opt-letter">C</span>Tentei mas desisti quando ficou difícil</div>
+      <div class="option" onclick="pick(this,'D','q12')"><span class="opt-letter">D</span>Achei que não merecia ou não conseguiria</div>
+    </div>
+    <div class="card-foot"><button class="btn-ghost" id="nxt-q12" onclick="go('q12','q13')" style="display:none">Próxima →</button></div>
+  </div>
+
+  <!-- Q13 -->
+  <div class="card" id="card-q13">
+    <p class="q-num">Pergunta 13 de 15</p>
+    <p class="q-text">Qual é a sua maior motivação para mudar agora?</p>
+    <div class="options">
+      <div class="option" onclick="pick(this,'A','q13')"><span class="opt-letter">A</span>Quero ser um exemplo melhor para meus filhos</div>
+      <div class="option" onclick="pick(this,'B','q13')"><span class="opt-letter">B</span>Quero me sentir bem comigo mesma de verdade</div>
+      <div class="option" onclick="pick(this,'C','q13')"><span class="opt-letter">C</span>Quero parar de me machucar com escolhas erradas</div>
+      <div class="option" onclick="pick(this,'D','q13')"><span class="opt-letter">D</span>Quero reconectar com Deus e com meu propósito</div>
+    </div>
+    <div class="card-foot"><button class="btn-ghost" id="nxt-q13" onclick="go('q13','q14')" style="display:none">Próxima →</button></div>
+  </div>
+
+  <!-- Q14 -->
+  <div class="card" id="card-q14">
+    <p class="q-num">Pergunta 14 de 15</p>
+    <p class="q-text">Você já imaginou como seria sua vida se você se sentisse inteira de novo?</p>
+    <div class="options">
+      <div class="option" onclick="pick(this,'A','q14')"><span class="opt-letter">A</span>Sim, sonho com isso todos os dias</div>
+      <div class="option" onclick="pick(this,'B','q14')"><span class="opt-letter">B</span>Às vezes imagino mas parece impossível</div>
+      <div class="option" onclick="pick(this,'C','q14')"><span class="opt-letter">C</span>Tenho medo de acreditar que isso pode acontecer</div>
+      <div class="option" onclick="pick(this,'D','q14')"><span class="opt-letter">D</span>Já não consigo nem imaginar — perdi essa esperança</div>
+    </div>
+    <div class="card-foot"><button class="btn-ghost" id="nxt-q14" onclick="go('q14','q15')" style="display:none">Próxima →</button></div>
+  </div>
+
+  <!-- Q15 -->
+  <div class="card" id="card-q15">
+    <p class="q-num">Pergunta 15 de 15</p>
+    <p class="q-text">O quanto você está pronta para se comprometer com sua transformação agora?</p>
+    <div class="options">
+      <div class="option" onclick="pick(this,'A','q15')"><span class="opt-letter">A</span>Completamente pronta — já deveria ter feito isso antes</div>
+      <div class="option" onclick="pick(this,'B','q15')"><span class="opt-letter">B</span>Pronta, mas com algumas dúvidas</div>
+      <div class="option" onclick="pick(this,'C','q15')"><span class="opt-letter">C</span>Quero muito mas tenho medo de não conseguir</div>
+      <div class="option" onclick="pick(this,'D','q15')"><span class="opt-letter">D</span>Ainda estou hesitante</div>
+    </div>
+    <div class="card-foot"><button class="btn-ghost" id="nxt-q15" onclick="calcResult()" style="display:none">Ver meu resultado ✨</button></div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="card" id="card-loading">
+    <div class="load-wrap">
+      <div style="font-size:56px;margin-bottom:24px;animation:pulse 1s ease-in-out infinite;">🔮</div>
+      <h2 class="val-title">Analisando seu perfil...</h2>
+      <p class="val-text">Cruzando suas respostas para identificar exatamente quem você é e o que você precisa.</p>
+      <div class="load-track"><div class="load-bar" id="loadBar"></div></div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="card" id="card-result">
+    <div class="result-glow"><span id="resEmoji">💜</span></div>
+    <p class="eyebrow">Seu Perfil Emocional</p>
+    <h2 class="result-name" id="resName"></h2>
+    <p class="result-desc" id="resDesc"></p>
+    <div class="traits-box" id="resTraits"></div>
+    <div class="divider"></div>
+    <p style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:16px;">Criamos o Protocolo Renascer especialmente pra esse perfil — com o seu desconto já garantido 🎉</p>
+    <button class="btn-gold pulse" onclick="go('result','offer')">Quero me reencontrar agora →</button>
+  </div>
+
+  <!-- SCRATCH -->
+  <div class="card" id="card-scratch">
+    <div class="scratch-wrap">
+      <p class="scratch-eyebrow">🎉 Parabéns por chegar até aqui</p>
+      <h2 class="scratch-title">Antes de ver seu perfil, você ganhou um desconto exclusivo!</h2>
+      <p class="scratch-sub">Raspe o card abaixo para revelar seu desconto</p>
+      <div class="scratch-hint"><span>👆</span>Arraste o dedo aqui</div>
+      <div class="scratch-container">
+        <div class="scratch-prize">
+          <span class="prize-pct">50%</span>
+          <span class="prize-label">de desconto</span>
+          <span class="prize-val">De R$95,80 por R$47,90</span>
+        </div>
+        <canvas id="scratchCanvas"></canvas>
+      </div>
+      <p class="scratch-revealed" id="scratchMsg">✅ Desconto aplicado! Clique abaixo para garantir</p>
+      <button class="btn-purple" id="btnAfterScratch" onclick="go('scratch','result')" style="display:none">Ver meu perfil →</button>
+    </div>
+  </div>
+
+  <!-- OFFER -->
+  <div class="card" id="card-offer">
+    <p class="eyebrow">✦ Oferta Exclusiva</p>
+    <h2 class="val-title" style="margin-bottom:4px;">Protocolo Renascer</h2>
+    <p style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:20px;">Personalizado para o seu perfil</p>
+
+    <div class="offer-box">
+      <p class="offer-title">Tudo o que você recebe agora:</p>
+      <div class="bonus-row">
+        <span class="bonus-ico">📘</span>
+        <div>
+          <p class="bonus-name">Seu Livro de Exercícios Protocolo Renascer</p>
+          <p class="bonus-val">21 dias pra parar de se perder nos outros e voltar a se reconhecer no espelho — passo a passo, sem enrolação. Liberado na hora: leia no celular ou <strong>imprima e sinta o papel na mão</strong> enquanto se redescobre.</p>
+        </div>
+      </div>
+      <div class="bonus-row">
+        <span class="bonus-ico">🎁</span>
+        <div>
+          <p class="bonus-name">BÔNUS 1: Diário da Mulher que Renasce</p>
+          <p class="bonus-val">Pra você colocar no papel tudo que engole todo dia — o que dói, o que cansa, o que você nunca teve coragem de admitir em voz alta. Também pronto pra imprimir. Grátis.</p>
+        </div>
+      </div>
+      <div class="bonus-row" style="border-bottom:none;">
+        <span class="bonus-ico">🎧</span>
+        <div>
+          <p class="bonus-name">BÔNUS 2: Meditação Guiada (10 minutos)</p>
+          <p class="bonus-val">Pros dias em que o peito aperta e você nem sabe por onde começar a respirar. Grátis.</p>
+        </div>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:13px;color:var(--lav2);font-weight:500;margin-bottom:4px;">🖨️ Pode imprimir o livro de exercícios e o diário e preencher à mão, do jeito que fizer mais sentido pra você</p>
+
+    <div class="price-center">
+      <p class="price-old">De R$95,80 com 50% OFF</p>
+      <p class="price-new">R$47,90</p>
+      <p class="price-label">Acesso imediato · Pagamento único</p>
+    </div>
+
+    <div class="urgency">⏰ Desconto válido apenas nesta sessão</div>
+
+    <button class="btn-purple pulse" onclick="goCheckout()">✨ Quero Meu Protocolo Agora</button>
+
+    <div class="guarantee">
+      <span style="font-size:20px">🛡️</span>
+      <span>Garantia de 7 dias. Se não gostar, devolvemos 100% do seu dinheiro. Sem perguntas.</span>
+    </div>
+
+    <p class="safe">🔒 Pagamento seguro · Entrega imediata · Kiwify</p>
+  </div>
+
+</div>
+
+<script>
+// STARS
+(function(){
+  const c=document.getElementById('stars');
+  for(let i=0;i<50;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    const sz=Math.random()*2+1;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${Math.random()*3+2}s;--o:${Math.random()*.4+.1};animation-delay:${Math.random()*3}s;`;
+    c.appendChild(s);
+  }
+})();
+
+const scores={A:0,B:0,C:0,D:0};
+const qMap={q1:1,q2:2,q3:3,q4:4,q5:5,q6:6,q7:7,q8:8,q9:9,q10:10,q11:11,q12:12,q13:13,q14:14,q15:15};
+
+function show(id){
+  document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
+  const el=document.getElementById('card-'+id);
+  if(el){el.classList.add('active');}
+  window.scrollTo(0,0);
+}
+
+function startQuiz(){
+  document.getElementById('progWrap').style.display='block';
+  updateProg(1);
+  show('q1');
+}
+
+function updateProg(n){
+  const pct=((n-1)/15)*100;
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progCount').textContent=n+' / 15';
+}
+
+function pick(el,letter,qId){
+  el.closest('.options').querySelectorAll('.option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  scores[letter]=(scores[letter]||0)+1;
+  const btn=document.getElementById('nxt-'+qId);
+  if(btn){btn.style.display='block';setTimeout(()=>btn.scrollIntoView({behavior:'smooth',block:'nearest'}),100);}
+}
+
+function go(from,to){
+  if(qMap[to]) updateProg(qMap[to]);
+  show(to);
+}
+
+function calcResult(){
+  show('loading');
+  let w=0;
+  const bar=document.getElementById('loadBar');
+  const iv=setInterval(()=>{
+    w+=2;bar.style.width=w+'%';
+    if(w>=100){clearInterval(iv);setTimeout(()=>{prepareResult();show('scratch');},400);}
+  },30);
+}
+
+const profiles={
+  A:{emoji:'🌹',name:'A Mulher Invisível',desc:'Você ama profundamente e se entrega de verdade. Mas com o tempo foi colocando todos em primeiro lugar e se esqueceu de si mesma. Você está lá para todos — mas quando você precisa, onde estão todos?',traits:['Coloca as necessidades dos outros acima das suas','Sente ansiedade quando não recebe atenção','Dificuldade de dizer não sem sentir culpa','Medo de decepcionar as pessoas que ama']},
+  B:{emoji:'🦋',name:'A Mulher que Perdeu o Chão',desc:'Você passou por algo que mudou tudo. Um término, uma perda, uma virada que te deixou sem saber quem você é sem aquela pessoa ou aquela fase. Agora é hora de se reencontrar.',traits:['Identidade ligada a outra pessoa ou fase da vida','Sensação de vazio depois de uma mudança grande','Oscilação emocional intensa','Dificuldade de se projetar no futuro']},
+  C:{emoji:'🌿',name:'A Mulher que Carrega Tudo Sozinha',desc:'Você é forte. Todo mundo sabe disso. E exatamente por isso todo mundo te entrega o peso. Você cuida dos filhos, da casa, do trabalho, dos outros. Mas quem cuida de você?',traits:['Esgotamento emocional crônico','Sensação de que ninguém vê o quanto você carrega','Dificuldade de pedir ajuda','Perdeu o contato com o que a faz feliz']},
+  D:{emoji:'✨',name:'A Mulher em Busca do Propósito',desc:'Você tem fé. Sabe que foi criada para algo maior. Mas em algum momento se afastou — de si mesma, de Deus, do seu propósito. Você sente esse vazio e quer se reconectar.',traits:['Sente que se afastou da sua essência espiritual','Busca sentido e propósito nas situações','Fé importante mas que precisa ser renovada','Desejo de reconectar com quem você foi criada para ser']}
+};
+
+function prepareResult(){
+  const max=Math.max(scores.A,scores.B,scores.C,scores.D);
+  let p='A';
+  if(scores.B>=max)p='B';else if(scores.C>=max)p='C';else if(scores.D>=max)p='D';
+  const prof=profiles[p];
+  document.getElementById('resEmoji').textContent=prof.emoji;
+  document.getElementById('resName').textContent=prof.name;
+  document.getElementById('resDesc').textContent=prof.desc;
+  document.getElementById('resTraits').innerHTML=
+    '<p class="traits-title">Características do seu perfil</p>'+
+    prof.traits.map(t=>`<div class="trait"><span class="trait-dot">✦</span><span>${t}</span></div>`).join('');
+  document.getElementById('progFill').style.width='100%';
+  document.getElementById('progCount').textContent='✓ Concluído';
+}
+
+// SCRATCH CARD
+function initScratch(){
+  const canvas=document.getElementById('scratchCanvas');
+  const container=canvas.parentElement;
+  canvas.width=container.offsetWidth;
+  canvas.height=container.offsetHeight;
+  const ctx=canvas.getContext('2d');
+
+  // Draw scratch layer
+  const grad=ctx.createLinearGradient(0,0,canvas.width,canvas.height);
+  grad.addColorStop(0,'#6B35C0');
+  grad.addColorStop(1,'#9B7FD4');
+  ctx.fillStyle=grad;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // Draw text on scratch layer
+  ctx.fillStyle='rgba(255,255,255,0.9)';
+  ctx.font='bold 18px Inter, sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText('🎁 Raspe aqui!', canvas.width/2, canvas.height/2-8);
+  ctx.font='13px Inter, sans-serif';
+  ctx.fillStyle='rgba(255,255,255,0.6)';
+  ctx.fillText('Arraste o dedo para revelar', canvas.width/2, canvas.height/2+16);
+
+  ctx.globalCompositeOperation='destination-out';
+
+  let drawing=false;
+  let scratched=0;
+  let revealed=false;
+
+  function getPos(e){
+    const rect=canvas.getBoundingClientRect();
+    const scaleX=canvas.width/rect.width;
+    const scaleY=canvas.height/rect.height;
+    const touch=e.touches?e.touches[0]:e;
+    return{x:(touch.clientX-rect.left)*scaleX,y:(touch.clientY-rect.top)*scaleY};
+  }
+
+  function scratch(e){
+    e.preventDefault();
+    if(!drawing)return;
+    const pos=getPos(e);
+    ctx.beginPath();
+    ctx.arc(pos.x,pos.y,28,0,Math.PI*2);
+    ctx.fill();
+    scratched+=Math.PI*28*28;
+    const total=canvas.width*canvas.height;
+    if(!revealed&&scratched/total>0.35){
+      revealed=true;
+      setTimeout(()=>{
+        document.getElementById('scratchMsg').style.display='block';
+        document.getElementById('btnAfterScratch').style.display='block';
+        document.getElementById('scratchMsg').scrollIntoView({behavior:'smooth',block:'nearest'});
+      },300);
+    }
+  }
+
+  canvas.addEventListener('mousedown',e=>{drawing=true;scratch(e);});
+  canvas.addEventListener('mousemove',scratch);
+  canvas.addEventListener('mouseup',()=>drawing=false);
+  canvas.addEventListener('touchstart',e=>{drawing=true;scratch(e);},{passive:false});
+  canvas.addEventListener('touchmove',scratch,{passive:false});
+  canvas.addEventListener('touchend',()=>drawing=false);
+}
+
+// Init scratch when its card becomes visible
+const observer=new MutationObserver(()=>{
+  const sc=document.getElementById('card-scratch');
+  if(sc&&sc.classList.contains('active')){
+    observer.disconnect();
+    setTimeout(initScratch,200);
+  }
+});
+observer.observe(document.body,{attributes:true,subtree:true,attributeFilter:['class']});
+
+function goCheckout(){
+  // TROQUE PELO SEU LINK DA KIWIFY
+  window.location.href='https://pay.kiwify.com.br/2gt5FAV';
+}
+</script>
+</body>
+</html>
