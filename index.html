@@ -646,9 +646,9 @@ const observer=new MutationObserver(()=>{
 });
 observer.observe(document.body,{attributes:true,subtree:true,attributeFilter:['class']});
 
-function goCheckout(){
-  // TROQUE PELO SEU LINK DA KIWIFY
-  window.location.href='https://pay.kiwify.com.br/2gt5FAV';
+function goCheckout() {
+  fbq('track', 'InitiateCheckout');
+  window.location.href = "https://pay.kiwify.com.br/...";
 }
 </script>
 </body>
