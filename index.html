@@ -466,20 +466,17 @@ canvas#scratchCanvas { position:absolute; top:0; left:0; width:100%; height:100%
         <div>
           <p class="bonus-name">BÔNUS 2: Meditação Guiada (10 minutos)</p>
           <p class="bonus-val">Pros dias em que o peito aperta e você nem sabe por onde começar a respirar. Grátis.</p>
+        </div><div class="bonus-card">
+      <span class="bonus-card-icon">📖</span>
+      <div class="bonus-card-body">
+        <p class="bonus-card-name">Guia de Continuidade</p>
+        <p class="bonus-card-desc">Um material complementar com orientações para manter sua evolução após os 21 dias e evitar voltar aos mesmos padrões emocionais.</p>
+        <div class="bonus-card-footer">
+          <span class="bonus-old">Valor: R$27,00</span>
+          <span class="bonus-free">GRÁTIS</span>
         </div>
       </div>
-    </div>
-    <p style="text-align:center;font-size:13px;color:var(--lav2);font-weight:500;margin-bottom:4px;">🖨️ Pode imprimir o livro de exercícios e o diário e preencher à mão, do jeito que fizer mais sentido pra você</p>
-
-    <div class="price-center">
-      <p class="price-old">De R$95,80 com 50% OFF</p>
-      <p class="price-new">R$47,90</p>
-      <p class="price-label">Acesso imediato · Pagamento único</p>
-    </div>
-
-    <div class="urgency">⏰ Desconto válido apenas nesta sessão</div>
-
-    <button class="btn-purple pulse" onclick="goCheckout()">✨ Quero Meu Protocolo Agora</button>
+</div>
 
     <div class="guarantee">
       <span style="font-size:20px">🛡️</span>
@@ -497,10 +494,10 @@ canvas#scratchCanvas { position:absolute; top:0; left:0; width:100%; height:100%
   const c=document.getElementById('stars');
   for(let i=0;i<50;i++){
     const s=document.createElement('div');
-    s.className='star';
-    const sz=Math.random()*2+1;
-    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${Math.random()*3+2}s;--o:${Math.random()*.4+.1};animation-delay:${Math.random()*3}s;`;
-    c.appendChild(s);
+  <div class="total-row">
+        <span class="total-row-label">📖 Guia de Continuidade</span>
+        <span class="total-row-free">GRÁTIS</span>
+</div>
   }
 })();
 
